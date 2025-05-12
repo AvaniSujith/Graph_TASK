@@ -311,6 +311,7 @@ input{
 
     .grid-body{
         width: 100%;
+        padding: 25px;
     }
 
     .coloring-block{
@@ -324,6 +325,10 @@ input{
 
     #colorSelected{
         width: inherit;
+    }
+
+    .box-num{
+        color: #ffffff;
     }
 }
 
