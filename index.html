@@ -11,79 +11,11 @@
 </head>
 <body>
  
-    <div class="container-modal">
-        <h2 class="heading">
-            Fill in the Information to Start Painting! 
-        </h2>
-        <div class="input-btns">
-            <div class="row-block">
-                <label for="rowsCount">Desired Number of Rows</label>
-                <input type="number" id="yAxis" autofocus>
-            </div>
-            
-            <div class="column-block">
-                <label for="colCount">Desired Number of Columns</label>
-                <input type="number" id="xAxis">
-            </div>
-
-            <button id="submit">
-                Generate
-            </button>
-            
-          </div>
+    <div class="graph-canvas">
+        <button id="add-graph">Build Graph</button>
+        <div id="graph-container"></div>
     </div>
-
-    <div class="main-content">
-        
-        <div class="coloring-block all-btns"> 
-  
-            <div class="input-btns">
-                <div class="row identifier">
-                    <label for="row-num">Row</label>
-                    <input type="number" id="yNum">
-                </div>
-
-                <div class="col identifier">
-                    <label for="col-num">Column</label>
-                    <input type="number" id="xNum">
-                </div>
-
-                <div class="color identifier">
-                    <label for="row-num">Color</label>
-                    <input type="color" id="colorSelected">
-                </div>
-              
-            </div>
-
-            <div class="control-btns">
-
-
-                <button id="simpleColorBtn">
-                    Mark
-                </button>
-    
-                <button id="clearBtn">
-                    Clear
-                </button>
-
-
-                <div class="reset-btn">
-                    <button id="resetBtn">
-                        Reset
-                    </button>
-                </div>
-                
-            </div>
-            
-          
-          </div>
-
-
-      <div class="grid-body">
-        <div class="grid-container" id="gridsContainer"></div>
-      </div>
-    </div>
-
     <script src="script.js"></script>
+
 </body>
-</html>
+</html> 

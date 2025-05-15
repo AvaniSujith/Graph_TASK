@@ -79,7 +79,7 @@ body{
     /* padding-left: 90px; */ 
 }
 
-.box{
+.cell{
     /* text-align: center; */
     border: 1px solid #ccc;
     display: flex;
@@ -88,9 +88,6 @@ body{
     /* color: #ccc;
     font-size: 20px;
     font-weight: 900; */
-}
-
-.box-num{
     color: #000;
     font-size: 20px;
     font-weight: 900;
