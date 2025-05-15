@@ -3,14 +3,15 @@ function createGraph({container, id, title}){
     const grid = wrapper.querySelector(".grid-container");
     const inputs = getInputs(wrapper);
     const state = { rows: 0, columns: 0};
-
     bindEvents(wrapper, inputs, grid, state, container);
 }
 
 function buildWrapper(container, id, title){
     const graphHeader = document.createElement("h2");
     graphHeader.className = 'heading';
-    graphHeader.textContent = `${title}`
+    graphHeader.textContent = `${title}`;
+    graphHeader.dataset.graphId = id;
+
     const wrapper = document.createElement("div");
     wrapper.className = "graph-wrapper";
     wrapper.id = id;
@@ -22,12 +23,12 @@ function buildWrapper(container, id, title){
                 <button class="generate-btn">Generate</button>
             </div>
 
-            <div class="color-controls">
+            <div class="color-controls" style="display:none">
                 <label>Row number: <input type="number" class="y-pos" /></label>
                 <label>Column number: <input type="number" class="x-pos" /></label>
                 <label>Color : <input type="color" class="color-picker" /></label>
                 <button class="mark-btn">Mark</button>
-                <button class="clear-btn">Clear</button>
+                <button class="clear-btn" style="display:none;">Clear</button>
             </div>
 
             <div class="control-btns">
@@ -56,7 +57,9 @@ function getInputs(wrapper){
         mark: wrapper.querySelector(".mark-btn"),
         clear: wrapper.querySelector(".clear-btn"),
         reset: wrapper.querySelector(".reset-btn"),
-        delete: wrapper.querySelector(".delete-btn")
+        delete: wrapper.querySelector(".delete-btn"),
+        inputBtns: wrapper.querySelector(".input-btns"),
+        colorBtns: wrapper.querySelector(".color-controls")
     };
 }
 
@@ -65,10 +68,15 @@ function bindEvents(wrapper, inputs, grid, state, container){
     inputs.mark.addEventListener("click", () => markCell(wrapper, inputs, state));
     inputs.clear.addEventListener("click", () => clearMarks(grid, inputs));
     inputs.reset.addEventListener("click", () => resetGrid(grid, inputs, state));
-    inputs.delete.addEventListener("click", () => container.removeChild(wrapper))
+    inputs.delete.addEventListener("click", () => deleteGraph(wrapper, container));
 }
 
 function generateGrid(grid, inputs, state){
+
+    inputs.clear.style.display = "block"; 
+    inputs.mark.style.display = "none";
+    inputs.inputBtns.style.display = "none";
+    inputs.colorBtns.style.display = "flex";
 
     const rows = parseInt(inputs.row.value);
     const columns = parseInt(inputs.col.value);
@@ -88,7 +96,6 @@ function generateGrid(grid, inputs, state){
             grid.appendChild(cell);
         }
     }
-
     state.rows = rows;
     state.cols = columns;
 }
@@ -117,7 +124,6 @@ function clearMarks(grid, inputs){
     inputs.color.value = "#000";
 }
 
-
 function resetGrid(grid, inputs, state){
     inputs.row.value = inputs.col.value = "";
     grid.innerHTML = "";
@@ -125,6 +131,45 @@ function resetGrid(grid, inputs, state){
     inputs.x.value = "";
     inputs.color.value = "#000";
     state.rows = state.cols = 0;
+    // wrapper.inputBtns.style.display = "flex";
+
+    inputs.inputBtns.style.display = "flex";
+    inputs.colorBtns.style.display = "none";
+    toggleMark(inputs, false);
+
+}
+
+function deleteGraph(wrapper, container){
+    const graphId = wrapper.id;
+    const header = container.querySelector(`h2[data-graph-id=${graphId}]`);
+
+    if(header){
+        container.removeChild(header)
+    }
+
+    container.removeChild(wrapper);
+
+    reOrderNumber(container);
+}
+
+
+function reOrderNumber(container){
+    const wrappers = container.querySelectorAll(".graph-wrapper");
+
+    wrappers.forEach((wrapper, index) => {
+        const newNumber = index+1;
+        const newId = `graph-${newNumber}`;
+        const oldId = wrapper.id;
+
+        wrapper.id = newId;
+
+        const header = container.querySelector(`h2[data-graph-id="${oldId}"]`);
+
+        if(header){
+            header.textContent = `Graph ${newNumber}`;
+            header.dataset.graphId = newId;
+        }
+    });
 }
 
 function toggleMark(inputs, marked){
@@ -136,17 +181,21 @@ function toggleMark(inputs, marked){
 function init(){
     const addGraphBtn = document.getElementById("add-graph");
     const graphContainer =document.getElementById("graph-container");
-    let graphCount = 0;
+    // let graphCount = 0;
 
     addGraphBtn.addEventListener("click", () => {
-        graphCount++;
+        // graphCount++;
+        const existingGraphs = graphContainer.querySelectorAll(".graph-wrapper").length;
+        const newGraphNumber = existingGraphs + 1;
+
+
         createGraph({
             container: graphContainer,
-            id: `graph-${graphCount}`,
-            title: `Graph ${graphCount}`
+            id: `graph-${newGraphNumber}`,
+            title: `Graph ${newGraphNumber}`
         });
         
     });
 }
 
-document.addEventListener("DOMContentLoaded", init);
+document.addEventListener("DOMContentLoaded", init); 
