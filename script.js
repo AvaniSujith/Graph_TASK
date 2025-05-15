@@ -8,28 +8,39 @@ function createGraph({container, id, title}){
 }
 
 function buildWrapper(container, id, title){
+    const graphHeader = document.createElement("h2");
+    graphHeader.className = 'heading';
+    graphHeader.textContent = `${title}`
     const wrapper = document.createElement("div");
     wrapper.className = "graph-wrapper";
     wrapper.id = id;
     wrapper.innerHTML = `
-        <h2>${title}</h2>
         <div class="input-controls">
-            <label>Rows: <input type="number" class="rows-input" /></label>
-            <label>Columns: <input type="number" class="cols-input" /></label>
-            <button class="generate-btn">Generate</button>
+            <div class="input-btns">
+                <label>Rows: <input type="number" class="rows-input" /></label>
+                <label>Columns: <input type="number" class="cols-input" /></label>
+                <button class="generate-btn">Generate</button>
+            </div>
+
+            <div class="color-controls">
+                <label>Row number: <input type="number" class="y-pos" /></label>
+                <label>Column number: <input type="number" class="x-pos" /></label>
+                <label>Color : <input type="color" class="color-picker" /></label>
+                <button class="mark-btn">Mark</button>
+                <button class="clear-btn">Clear</button>
+            </div>
+
+            <div class="control-btns">
+                <button class="reset-btn">Reset</button>
+                <button class="delete-btn">Delete Graph</button>
+            </div>
         </div>
-        <div class="color-controls">
-            <label>Row number: <input type="number" class="y-pos" /></label>
-            <label>Column number: <input type="number" class="x-pos" /></label>
-            <label>Color : <input type="color" class="color-picker" /></label>
-            <button class="mark-btn">Mark</button>
-            <button class="clear-btn">Clear</button>
-            <button class="reset-btn">Reset</button>
-            <button class="delete-btn">Delete Graph</button>
-        </div>
+
         <div class="grid-container"></div>
+       
     `;
 
+    container.appendChild(graphHeader);
     container.appendChild(wrapper);
     return wrapper;
 }
@@ -66,8 +77,8 @@ function generateGrid(grid, inputs, state){
 
     grid.innerHTML = "";
     grid.style.display = "grid";
-    grid.style.gridTemplateColumns = `repeat(${columns}, 40px)`;
-    grid.style.gridTemplateRows = `repeat(${rows}, 40px)`;
+    grid.style.gridTemplateColumns = `repeat(${columns}, 60px)`;
+    grid.style.gridTemplateRows = `repeat(${rows}, 60px)`;
 
     for(let r = 1; r <= rows ; r++){
         for(let c = 1; c <= columns; c++){
@@ -81,7 +92,6 @@ function generateGrid(grid, inputs, state){
     state.rows = rows;
     state.cols = columns;
 }
-
 
 function markCell(wrapper, inputs, state){
     const y = parseInt(inputs.y.value);
@@ -103,6 +113,7 @@ function clearMarks(grid, inputs){
     grid.querySelectorAll(".cell").forEach(cell => cell.style.backgroundColor = "");
     toggleMark(inputs, false);
     inputs.y.value = "";
+    inputs.x.value = "";
     inputs.color.value = "#000";
 }
 
@@ -110,6 +121,9 @@ function clearMarks(grid, inputs){
 function resetGrid(grid, inputs, state){
     inputs.row.value = inputs.col.value = "";
     grid.innerHTML = "";
+    inputs.y.value = "";
+    inputs.x.value = "";
+    inputs.color.value = "#000";
     state.rows = state.cols = 0;
 }
 
