@@ -29,6 +29,7 @@ function buildWrapper(container, id, title){
                 <label>Color : <input type="color" class="color-picker" /></label>
                 <button class="mark-btn">Mark</button>
                 <button class="clear-btn" style="display:none;">Clear</button>
+                <button class="plot-btn">Plot</button>
             </div>
 
             <div class="control-btns">
@@ -55,6 +56,7 @@ function getInputs(wrapper){
         x: wrapper.querySelector(".x-pos"),
         color: wrapper.querySelector(".color-picker"),
         mark: wrapper.querySelector(".mark-btn"),
+        plot: wrapper.querySelector(".plot-btn"),
         clear: wrapper.querySelector(".clear-btn"),
         reset: wrapper.querySelector(".reset-btn"),
         delete: wrapper.querySelector(".delete-btn"),
@@ -69,12 +71,13 @@ function bindEvents(wrapper, inputs, grid, state, container){
     inputs.clear.addEventListener("click", () => clearMarks(grid, inputs));
     inputs.reset.addEventListener("click", () => resetGrid(grid, inputs, state));
     inputs.delete.addEventListener("click", () => deleteGraph(wrapper, container));
+    inputs.plot.addEventListener("click", () => plotGraph(wrapper, inputs, state));
 }
 
 function generateGrid(grid, inputs, state){
 
-    inputs.clear.style.display = "block"; 
-    inputs.mark.style.display = "none";
+  
+    // inputs.mark.style.display = "none";
     inputs.inputBtns.style.display = "none";
     inputs.colorBtns.style.display = "flex";
 
@@ -114,7 +117,29 @@ function markCell(wrapper, inputs, state){
         cell.style.backgroundColor = inputs.color.value;
         toggleMark(inputs, true);
     }
-}    
+}   
+
+function plotGraph(wrapper, inputs, state){
+    const y = parseInt(inputs.y.value);
+    const x = parseInt(inputs.x.value);
+
+    if(!y || !x || y > state.rows || x > state.cols || y < 1 || x < 1){
+        alert("Invalid coordinates");
+        return;
+    }
+
+    // const cells = document.querySelectorAll()
+
+    for(let i = 1; i <= y; i++){
+        // const cell = document.querySelector(`.row-${i}.col-${x}`);
+
+        const cell = wrapper.querySelector(`.row-${i}.col-${x}`);
+
+        if(cell){
+        cell.style.backgroundColor = inputs.color.value;
+        }
+    }
+}
 
 function clearMarks(grid, inputs){
     grid.querySelectorAll(".cell").forEach(cell => cell.style.backgroundColor = "");
@@ -132,7 +157,6 @@ function resetGrid(grid, inputs, state){
     inputs.color.value = "#000";
     state.rows = state.cols = 0;
     // wrapper.inputBtns.style.display = "flex";
-
     inputs.inputBtns.style.display = "flex";
     inputs.colorBtns.style.display = "none";
     toggleMark(inputs, false);
@@ -198,4 +222,4 @@ function init(){
     });
 }
 
-document.addEventListener("DOMContentLoaded", init); 
+document.addEventListener("DOMContentLoaded", init);
