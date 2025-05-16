@@ -5,7 +5,7 @@ function createGraph({container, id, title}){
     const state = { rows: 0, columns: 0};
     bindEvents(wrapper, inputs, grid, state, container);
 
-    graph.scrollIntoView({ behavior: "smooth", block: "center" });
+    wrapper.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
 function buildWrapper(container, id, title){
@@ -37,7 +37,7 @@ function buildWrapper(container, id, title){
                     Remove Border
                     <label class="switch border-switch"> 
                         
-                        <input type="checkbox">
+                        <input type="checkbox" class="border-toggle">
                         <span class="slider round"></span>
 
                     </label>
@@ -96,7 +96,8 @@ function getInputs(wrapper){
         rightMargin:wrapper.querySelector(".margin-right"),
         bottomMargin:wrapper.querySelector(".margin-bottom"),
         leftMargin:wrapper.querySelector(".margin-left"),
-        applyMargin:wrapper.querySelector(".validate-btn")
+        applyMargin:wrapper.querySelector(".validate-btn"),
+        borderHideBtn:wrapper.querySelector(".border-toggle")
     };
 }
 
@@ -107,8 +108,12 @@ function bindEvents(wrapper, inputs, grid, state, container){
     inputs.reset.addEventListener("click", () => resetGrid(grid, inputs, state));
     inputs.delete.addEventListener("click", () => deleteGraph(wrapper, container));
     inputs.plot.addEventListener("click", () => plotGraph(wrapper, inputs, state));
-    inputs.editingBtn.addEventListener("click", () => editingBoxController(wrapper, inputs));
-    inputs.applyMargin.addEventListener("click", () => editing(wrapper, inputs))
+    inputs.editingBtn.addEventListener("click", () => editingBoxController(inputs));
+    inputs.applyMargin.addEventListener("click", () => editing(wrapper, inputs));
+
+    if(inputs.borderHideBtn){
+        inputs.borderHideBtn.addEventListener("change", () => toggleCellBorders(wrapper, inputs.borderHideBtn.checked));
+    }
 }
 
 function generateGrid(grid, inputs, state){
@@ -120,7 +125,7 @@ function generateGrid(grid, inputs, state){
     const rows = parseInt(inputs.row.value);
     const columns = parseInt(inputs.col.value);
 
-    if(!rows || !columns || rows < 1 || columns < 1) return alert("Please enter both  valid rows and valid columns");
+    if(!rows || !columns || rows < 1 || columns < 1) return alert("Please enter both valid rows and valid columns");
 
     grid.innerHTML = "";
     grid.style.display = "grid";
@@ -148,19 +153,6 @@ function markCell(wrapper, inputs, state){
         return; 
     }
  
-    // const cell = wrapper.querySelector(`.row-${y}.col-${x}`); 
-    // const innerDiv = document.createElement("div");
-    // innerDiv.className = "color-box";
-    // cell.appendChild(innerDiv);
-    
-    // const colorBox = cell.querySelector(".color-box");
-
-    // if(cell && colorBox){
-    //     cell.textContent = "";
-    //     colorBox.style.backgroundColor = inputs.color.value;
-    //     toggleMark(inputs, true);
-    // }
-
     const cell = wrapper.querySelector(`.row-${y}.col-${x}`);
 
     if(cell){
@@ -169,15 +161,18 @@ function markCell(wrapper, inputs, state){
 
         const innerDiv = document.createElement("div");
         innerDiv.className = "color-box";
+        innerDiv.style.backgroundColor = inputs.color.value;
         cell.appendChild(innerDiv);
 
-        const colorBox = cell.querySelector(".color-box");
+        toggleMark(inputs, true)
 
-        if(colorBox){
-            colorBox.style.backgroundColor = inputs.color.value;
+        // const colorBox = cell.querySelector(".color-box");
 
-            toggleMark(inputs, true);
-        }
+        // if(colorBox){
+        //     colorBox.style.backgroundColor = inputs.color.value;
+
+        //     toggleMark(inputs, true);
+        // }
 
     }
 }   
@@ -188,7 +183,7 @@ function plotGraph(wrapper, inputs, state){
 
     if(!y || !x || y > state.rows || x > state.cols || y < 1 || x < 1){
         alert("Invalid coordinates");
-        return;
+        return; 
     }
 
     // const cells = document.querySelectorAll();
@@ -199,18 +194,29 @@ function plotGraph(wrapper, inputs, state){
         const cell = wrapper.querySelector(`.row-${i}.col-${x}`);
 
         if(cell){
-            cell.style.backgroundColor = inputs.color.value;
-            // cell.style.border = "none";
-            // cell.style.fontSize = "10px";
-            // cell.textContent = "";
-            toggleMark(inputs, true)
+            cell.textContent = "";
+
+            const innerDiv = document.createElement("div");
+            innerDiv.className = "color-box";
+            innerDiv.style.backgroundColor = inputs.color.value;
+            cell.appendChild(innerDiv);
+
+            // const colorBox = cell.querySelectorAll(".color-box");
+
+            // if(colorBox){
+            //     colorBox.style.backgroundColor = inputs.color.value;
+            //     toggleMark(inputs, true);
+            // }
         }
     }
+
+    toggleMark(inputs, true)
 }
 
 function editingBoxController(inputs){
     inputs.editingController.style.display = "flex";
-    inputs.inputBtns.style.display = "none";
+    // inputs.inputBtns.style.display = "none";
+    inputs.colorBtns.style.display = "none";
 }
 
 function editing(wrapper, inputs){
@@ -221,7 +227,7 @@ function editing(wrapper, inputs){
 
     const colorBoxes = wrapper.querySelectorAll(".color-box");
 
-    if(colorBoxes){
+    if(colorBoxes.length > 0){
         colorBoxes.forEach(box => {
             box.style.marginTop = mTop + "px";
             box.style.marginRight = mRight + "px";
@@ -234,8 +240,32 @@ function editing(wrapper, inputs){
     }   
 }
 
-function clearMarks(grid, inputs){
-    grid.querySelectorAll(".cell").forEach(cell => cell.style.backgroundColor = "");
+function toggleCellBorders(wrapper, removeBorders){
+    const colorBoxes = wrapper.querySelectorAll(".color-box");
+
+    colorBoxes.forEach(box => {
+        box.style.border = removeBorders ? "none" : "1px solid black";
+    });
+}
+
+function clearMarks(grid, inputs, state){
+
+    const rows = state.rows;
+    const cols = state.cols;
+
+    for(let r = 1; r <= rows; r++){
+        for(let c = 1; c <= cols; c++){
+            const cell = grid.querySelector(`.row-${r}.col-${c}`);
+            if(cell){
+                const colorBox = cell.querySelector(".color-box");
+                if(colorBox){
+                    cell.removeChild(colorBox);
+                }
+                cell.textContent = `${r} x ${c}`;
+            }
+        }
+    }
+
     toggleMark(inputs, false);
     inputs.y.value = "";
     inputs.x.value = "";
@@ -249,7 +279,7 @@ function resetGrid(grid, inputs, state){
     inputs.x.value = "";
     inputs.color.value = "#000";
     state.rows = state.cols = 0;
-    // wrapper.inputBtns.style.display = "flex";
+    
     inputs.inputBtns.style.display = "flex";
     inputs.colorBtns.style.display = "none";
     toggleMark(inputs, false);
