@@ -4,6 +4,8 @@ function createGraph({container, id, title}){
     const inputs = getInputs(wrapper);
     const state = { rows: 0, columns: 0};
     bindEvents(wrapper, inputs, grid, state, container);
+
+    graph.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
 function buildWrapper(container, id, title){
@@ -23,13 +25,39 @@ function buildWrapper(container, id, title){
                 <button class="generate-btn">Generate</button>
             </div>
 
+            <div class="editing-controllers" style="display:none">
+                <div class="margin-controllers">
+                    <label>Top: <input type="number" class="margin-top" /></label>
+                    <label>Right: <input type="number" class="margin-right" /></label>
+                    <label>Bottom: <input type="number" class="margin-bottom" /></label>
+                    <label>Left: <input type="number" class="margin-left" /></label>
+                </div>
+                <button class="validate-btn">Apply Margin</button>
+                <div class="border-controller">
+                    Remove Border
+                    <label class="switch border-switch"> 
+                        
+                        <input type="checkbox">
+                        <span class="slider round"></span>
+
+                    </label>
+                </div>
+            </div>
+
             <div class="color-controls" style="display:none">
+
                 <label>Row number: <input type="number" class="y-pos" /></label>
                 <label>Column number: <input type="number" class="x-pos" /></label>
-                <label>Color : <input type="color" class="color-picker" /></label>
-                <button class="mark-btn">Mark</button>
-                <button class="clear-btn" style="display:none;">Clear</button>
-                <button class="plot-btn">Plot</button>
+                <label>Color: <input type="color" class="color-picker" /></label>
+
+                <div class="marking-btns">
+                    <button class="mark-btn">Mark</button>
+                    <button class="clear-btn" style="display:none;">Clear</button>
+                    <button class="plot-btn">Plot</button>
+                </div>
+
+                <button class="editing-btn">Edit</button>
+
             </div>
 
             <div class="control-btns">
@@ -61,7 +89,14 @@ function getInputs(wrapper){
         reset: wrapper.querySelector(".reset-btn"),
         delete: wrapper.querySelector(".delete-btn"),
         inputBtns: wrapper.querySelector(".input-btns"),
-        colorBtns: wrapper.querySelector(".color-controls")
+        colorBtns: wrapper.querySelector(".color-controls"),
+        editingController:wrapper.querySelector(".editing-controllers"),
+        editingBtn:wrapper.querySelector(".editing-btn"),
+        topMargin:wrapper.querySelector(".margin-top"),
+        rightMargin:wrapper.querySelector(".margin-right"),
+        bottomMargin:wrapper.querySelector(".margin-bottom"),
+        leftMargin:wrapper.querySelector(".margin-left"),
+        applyMargin:wrapper.querySelector(".validate-btn")
     };
 }
 
@@ -72,11 +107,12 @@ function bindEvents(wrapper, inputs, grid, state, container){
     inputs.reset.addEventListener("click", () => resetGrid(grid, inputs, state));
     inputs.delete.addEventListener("click", () => deleteGraph(wrapper, container));
     inputs.plot.addEventListener("click", () => plotGraph(wrapper, inputs, state));
+    inputs.editingBtn.addEventListener("click", () => editingBoxController(wrapper, inputs));
+    inputs.applyMargin.addEventListener("click", () => editing(wrapper, inputs))
 }
 
 function generateGrid(grid, inputs, state){
 
-  
     // inputs.mark.style.display = "none";
     inputs.inputBtns.style.display = "none";
     inputs.colorBtns.style.display = "flex";
@@ -91,9 +127,9 @@ function generateGrid(grid, inputs, state){
     grid.style.gridTemplateColumns = `repeat(${columns}, 60px)`;
     grid.style.gridTemplateRows = `repeat(${rows}, 60px)`;
 
-    for(let r = 1; r <= rows ; r++){
+    for(let r = rows; r >= 1; r--){
         for(let c = 1; c <= columns; c++){
-            const cell = document.createElement("div");
+            const cell = document.createElement("div");             
             cell.className = `cell row-${r} col-${c}`;
             cell.textContent = `${r} x ${c}`;
             grid.appendChild(cell);
@@ -109,13 +145,40 @@ function markCell(wrapper, inputs, state){
 
     if(!y || !x || y > state.rows || x > state.cols || y < 1 || x < 1){
         alert("Invalid coordinates.");
-        return;
+        return; 
     }
+ 
+    // const cell = wrapper.querySelector(`.row-${y}.col-${x}`); 
+    // const innerDiv = document.createElement("div");
+    // innerDiv.className = "color-box";
+    // cell.appendChild(innerDiv);
+    
+    // const colorBox = cell.querySelector(".color-box");
+
+    // if(cell && colorBox){
+    //     cell.textContent = "";
+    //     colorBox.style.backgroundColor = inputs.color.value;
+    //     toggleMark(inputs, true);
+    // }
 
     const cell = wrapper.querySelector(`.row-${y}.col-${x}`);
+
     if(cell){
-        cell.style.backgroundColor = inputs.color.value;
-        toggleMark(inputs, true);
+
+        cell.textContent = "";
+
+        const innerDiv = document.createElement("div");
+        innerDiv.className = "color-box";
+        cell.appendChild(innerDiv);
+
+        const colorBox = cell.querySelector(".color-box");
+
+        if(colorBox){
+            colorBox.style.backgroundColor = inputs.color.value;
+
+            toggleMark(inputs, true);
+        }
+
     }
 }   
 
@@ -128,17 +191,47 @@ function plotGraph(wrapper, inputs, state){
         return;
     }
 
-    // const cells = document.querySelectorAll()
-
+    // const cells = document.querySelectorAll();
     for(let i = 1; i <= y; i++){
+
         // const cell = document.querySelector(`.row-${i}.col-${x}`);
 
         const cell = wrapper.querySelector(`.row-${i}.col-${x}`);
 
         if(cell){
-        cell.style.backgroundColor = inputs.color.value;
+            cell.style.backgroundColor = inputs.color.value;
+            // cell.style.border = "none";
+            // cell.style.fontSize = "10px";
+            // cell.textContent = "";
+            toggleMark(inputs, true)
         }
     }
+}
+
+function editingBoxController(inputs){
+    inputs.editingController.style.display = "flex";
+    inputs.inputBtns.style.display = "none";
+}
+
+function editing(wrapper, inputs){
+    const mTop = parseInt(inputs.topMargin.value) || 0;
+    const mRight = parseInt(inputs.rightMargin.value) || 0;
+    const mBottom = parseInt(inputs.bottomMargin.value) || 0;
+    const mLeft = parseInt(inputs.leftMargin.value) || 0;
+
+    const colorBoxes = wrapper.querySelectorAll(".color-box");
+
+    if(colorBoxes){
+        colorBoxes.forEach(box => {
+            box.style.marginTop = mTop + "px";
+            box.style.marginRight = mRight + "px";
+            box.style.marginBottom = mBottom + "px";
+            box.style.marginLeft = mLeft + "px";
+
+            box.style.width =`calc(100% - ${mLeft + mRight}px)`;
+            box.style.height = `calc(100% - ${mTop + mBottom}px)`;
+        })
+    }   
 }
 
 function clearMarks(grid, inputs){
@@ -203,6 +296,7 @@ function toggleMark(inputs, marked){
 }
 
 function init(){
+
     const addGraphBtn = document.getElementById("add-graph");
     const graphContainer =document.getElementById("graph-container");
     // let graphCount = 0;
@@ -212,7 +306,6 @@ function init(){
         const existingGraphs = graphContainer.querySelectorAll(".graph-wrapper").length;
         const newGraphNumber = existingGraphs + 1;
 
-
         createGraph({
             container: graphContainer,
             id: `graph-${newGraphNumber}`,
@@ -220,6 +313,7 @@ function init(){
         });
         
     });
+
 }
 
 document.addEventListener("DOMContentLoaded", init);
