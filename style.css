@@ -193,7 +193,8 @@ input:checked + .slider:before{
 .validate-btn,
 .editing-btn,
 .reset-btn,
-.delete-btn{
+.delete-btn,
+.clear-margin{
     padding: 10px 12px;
     background-color: #703235;
     color: #ffffff;
@@ -203,7 +204,7 @@ input:checked + .slider:before{
     border-radius: 8px;
     width: 100%;
     cursor: pointer;
-}
+} 
 
 .input-btns,
 .color-controls{
@@ -211,6 +212,30 @@ input:checked + .slider:before{
     flex-direction: column;
     gap: 10px;
     width: 100%;
+}
+
+button:disabled{
+    background-color: #ccc !important;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+input[type="number"]:invalid {
+    border-color:  #ff3860;
+    box-shadow: 0 0 0 1px #ff3860;
+}
+
+.error-message{
+    color: #ff3860;
+    font-size: 12px;
+    margin-top: 5px;
+    display: block;
+}
+
+input[type="number"]{
+    border: 1px solid #ccc;
+    padding: 5px;
+    transform: border-color 0.3s ease;
 }
 
 .input-btns,
@@ -222,11 +247,6 @@ input:checked + .slider:before{
     margin-bottom: 15px;
     padding: 0 5px;
 }
-/* 
-.reset-btn,
-.delete-btn{
-    width: 50%;
-} */
 
 .control-btns{
     display: flex;
@@ -254,6 +274,7 @@ input:checked + .slider:before{
     height: 100%;
     display: block;
     margin: 0px;
+    border: 2px solid #000;
 }
 
 .grid-container{
@@ -267,3 +288,61 @@ input:checked + .slider:before{
     flex-wrap:  wrap;
 }
 
+@media screen and (max-width:960px){
+
+    .generate-btn, 
+    .mark-btn, 
+    .plot-btn, 
+    .clear-btn, 
+    .validate-btn, 
+    .editing-btn, 
+    .reset-btn, 
+    .delete-btn, 
+    .clear-margin{
+        font-size: 13px;
+        text-wrap: nowrap;
+    }
+
+    .border-controller{
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .input-controls label{
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .cell{
+        font-size: 13px;
+    }
+   
+}
+
+
+@media screen and (max-width:699px){
+
+    .graph-wrapper{
+        flex-direction: column;
+    }
+
+    .input-controls{
+        width: 55%;
+    }
+
+    .grid-container{
+        width: 95%;
+    }
+
+    #graph-container{
+        max-height: 50%;
+    }
+}
+
+@media screen and (max-width:528px){
+    
+    .control-btns{
+        flex-direction: column;
+    }
+    
+}

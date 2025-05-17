@@ -1,4 +1,5 @@
 function createGraph({container, id, title}){
+
     const wrapper = buildWrapper(container, id, title);
     const grid = wrapper.querySelector(".grid-container");
     const inputs = getInputs(wrapper);
@@ -20,24 +21,34 @@ function buildWrapper(container, id, title){
     wrapper.innerHTML = `
         <div class="input-controls">
             <div class="input-btns">
-                <label>Rows: <input type="number" class="rows-input" /></label>
-                <label>Columns: <input type="number" class="cols-input" /></label>
+                <label>Rows: <input type="number" class="rows-input" min="1" max="150" autofocus/></label>
+                <label>Columns: <input type="number" class="cols-input" min="1" max="150" /></label>
                 <button class="generate-btn">Generate</button>
             </div>
 
             <div class="editing-controllers" style="display:none">
                 <div class="margin-controllers">
-                    <label>Top: <input type="number" class="margin-top" /></label>
-                    <label>Right: <input type="number" class="margin-right" /></label>
-                    <label>Bottom: <input type="number" class="margin-bottom" /></label>
-                    <label>Left: <input type="number" class="margin-left" /></label>
+                    <label>Top: <input type="number" class="margin-top" min="0" max="25" /></label>
+                    <label>Right: <input type="number" class="margin-right" min="0" max="25" /></label>
+                    <label>Bottom: <input type="number" class="margin-bottom" min="0" max="25" /></label>
+                    <label>Left: <input type="number" class="margin-left" min="0" max="25" /></label>
                 </div>
                 <button class="validate-btn">Apply Margin</button>
+                <button class="clear-margin" style="display:none;">Remove Margin</button>
                 <div class="border-controller">
-                    Remove Border
+                    Remove Box Border
                     <label class="switch border-switch"> 
                         
                         <input type="checkbox" class="border-toggle">
+                        <span class="slider round"></span>
+
+                    </label>
+                </div>
+                <div class="border-controller">
+                    Remove Grid Lines
+                    <label class="switch border-switch"> 
+                        
+                        <input type="checkbox" class="cellBorderToggle">
                         <span class="slider round"></span>
 
                     </label>
@@ -56,12 +67,12 @@ function buildWrapper(container, id, title){
                     <button class="plot-btn">Plot</button>
                 </div>
 
-                <button class="editing-btn">Edit</button>
+                <button class="editing-btn" disabled>Edit</button>
 
             </div>
 
             <div class="control-btns">
-                <button class="reset-btn">Reset</button>
+                <button class="reset-btn" style="display:none;">Reset</button>
                 <button class="delete-btn">Delete Graph</button>
             </div>
         </div>
@@ -97,35 +108,90 @@ function getInputs(wrapper){
         bottomMargin:wrapper.querySelector(".margin-bottom"),
         leftMargin:wrapper.querySelector(".margin-left"),
         applyMargin:wrapper.querySelector(".validate-btn"),
-        borderHideBtn:wrapper.querySelector(".border-toggle")
+        removeMargin:wrapper.querySelector(".clear-margin"),
+        borderHideBtn:wrapper.querySelector(".border-toggle"),
+        gridBorderHide:wrapper.querySelector(".cellBorderToggle")
     };
 }
 
 function bindEvents(wrapper, inputs, grid, state, container){
+
+    inputs.row.addEventListener("input", () => validateNumberInputWithFeedback(inputs.row, 1, 150, wrapper));
+    inputs.col.addEventListener("input", () => validateNumberInputWithFeedback(inputs.col, 1, 150, wrapper));
+
+
     inputs.generate.addEventListener("click", () => generateGrid(grid, inputs, state));
     inputs.mark.addEventListener("click", () => markCell(wrapper, inputs, state));
-    inputs.clear.addEventListener("click", () => clearMarks(grid, inputs));
+    inputs.clear.addEventListener("click", () => clearMarks(grid, inputs, state));
     inputs.reset.addEventListener("click", () => resetGrid(grid, inputs, state));
     inputs.delete.addEventListener("click", () => deleteGraph(wrapper, container));
     inputs.plot.addEventListener("click", () => plotGraph(wrapper, inputs, state));
     inputs.editingBtn.addEventListener("click", () => editingBoxController(inputs));
     inputs.applyMargin.addEventListener("click", () => editing(wrapper, inputs));
-
     if(inputs.borderHideBtn){
         inputs.borderHideBtn.addEventListener("change", () => toggleCellBorders(wrapper, inputs.borderHideBtn.checked));
+    }
+
+    inputs.removeMargin.addEventListener("click", () => togglerResetMargin(inputs, wrapper));
+
+    if(inputs.gridBorderHide){
+        inputs.gridBorderHide.addEventListener("change", () => toggleGridBorders(wrapper, grid, inputs.gridBorderHide.checked));
+    }
+}
+
+function validateNumberInputWithFeedback(inputElement, min, max, wrapper){
+    let errorId = inputElement.className + "-error";
+    let errorElement = document.getElementById(errorId);
+
+    if(!errorElement){
+        errorElement = document.createElement("span");
+        errorElement.id = errorId;
+        errorElement.className = "error-message";
+        errorElement.style.color = "#ff3860";
+        errorElement.style.fontSize = "12px";
+        errorElement.style.display = "none";
+        errorElement.style.marginLeft = "10px";
+        inputElement.parentNode.appendChild(errorElement);
+    }
+
+    let value = parseInt(inputElement.value);
+
+    if(inputElement.value === ""){
+        errorElement.style.display = "none";
+        return;
+    }
+
+    if(isNaN(value)){
+        errorElement.textContent = "Please Enter a valid number";
+        errorElement.style.display = "inline";
+        inputElement.style.borderColor = "#ff3860";
+        return;
+    }
+
+    if(value < min){
+        errorElement.textContent = `Minimum value is ${min}`;
+        errorElement.style.display = "inline";
+        inputElement.style.borderColor = "#ff3860";
+    } else if(value > max){
+        errorElement.textContent = `Maximum value is ${max}`;
+        errorElement.style.display = "inline";
+        inputElement.style.borderColor = "#ff3860";
+    }else{
+        errorElement.style.display = "none";
+        inputElement.style.borderColor = "#ff3860";
     }
 }
 
 function generateGrid(grid, inputs, state){
 
-    // inputs.mark.style.display = "none";
-    inputs.inputBtns.style.display = "none";
-    inputs.colorBtns.style.display = "flex";
-
     const rows = parseInt(inputs.row.value);
     const columns = parseInt(inputs.col.value);
 
     if(!rows || !columns || rows < 1 || columns < 1) return alert("Please enter both valid rows and valid columns");
+
+    inputs.reset.style.display = "block";
+    inputs.inputBtns.style.display = "none";
+    inputs.colorBtns.style.display = "flex";
 
     grid.innerHTML = "";
     grid.style.display = "grid";
@@ -166,14 +232,6 @@ function markCell(wrapper, inputs, state){
 
         toggleMark(inputs, true)
 
-        // const colorBox = cell.querySelector(".color-box");
-
-        // if(colorBox){
-        //     colorBox.style.backgroundColor = inputs.color.value;
-
-        //     toggleMark(inputs, true);
-        // }
-
     }
 }   
 
@@ -186,11 +244,7 @@ function plotGraph(wrapper, inputs, state){
         return; 
     }
 
-    // const cells = document.querySelectorAll();
     for(let i = 1; i <= y; i++){
-
-        // const cell = document.querySelector(`.row-${i}.col-${x}`);
-
         const cell = wrapper.querySelector(`.row-${i}.col-${x}`);
 
         if(cell){
@@ -200,13 +254,6 @@ function plotGraph(wrapper, inputs, state){
             innerDiv.className = "color-box";
             innerDiv.style.backgroundColor = inputs.color.value;
             cell.appendChild(innerDiv);
-
-            // const colorBox = cell.querySelectorAll(".color-box");
-
-            // if(colorBox){
-            //     colorBox.style.backgroundColor = inputs.color.value;
-            //     toggleMark(inputs, true);
-            // }
         }
     }
 
@@ -214,12 +261,16 @@ function plotGraph(wrapper, inputs, state){
 }
 
 function editingBoxController(inputs){
+    
     inputs.editingController.style.display = "flex";
-    // inputs.inputBtns.style.display = "none";
     inputs.colorBtns.style.display = "none";
+
 }
 
 function editing(wrapper, inputs){
+
+    inputs.removeMargin.style.display = "block"
+    inputs.applyMargin.style.display = "none"
     const mTop = parseInt(inputs.topMargin.value) || 0;
     const mRight = parseInt(inputs.rightMargin.value) || 0;
     const mBottom = parseInt(inputs.bottomMargin.value) || 0;
@@ -244,8 +295,36 @@ function toggleCellBorders(wrapper, removeBorders){
     const colorBoxes = wrapper.querySelectorAll(".color-box");
 
     colorBoxes.forEach(box => {
-        box.style.border = removeBorders ? "none" : "1px solid black";
+        box.style.border = removeBorders ? "none" : "2px solid black";
     });
+}
+
+function toggleGridBorders(wrapper, grid, removeBorders){
+    
+    const cells = wrapper.querySelectorAll(".cell");
+
+    cells.forEach(cell => {
+        cell.style.border = removeBorders ? "none" : "1px solid #ccc";
+    })
+
+    // grid.style.borderLeft = removeBorders ? "1px solid #ccc" : "none";
+    // grid.style.borderBottom = removeBorders ? "1px solid #ccc" : "none";
+
+    if(removeBorders){
+
+        const bottomRow = wrapper.querySelectorAll(`.row-1`);
+        bottomRow.forEach(cell => {
+            cell.style.borderBottom = "1px solid #000";
+        });
+
+        for(let r = 1; r <= parseInt(grid.style.gridTemplateRows.match(/repeat\((\d+)/)[1]); r++){
+            const leftCell = wrapper.querySelector(`.row-${r}.col-1`);
+            if(leftCell){
+                leftCell.style.borderLeft = "1px solid #000";
+            }
+        }
+    }
+    
 }
 
 function clearMarks(grid, inputs, state){
@@ -272,6 +351,34 @@ function clearMarks(grid, inputs, state){
     inputs.color.value = "#000";
 }
 
+function togglerResetMargin(inputs, wrapper){
+
+    if(inputs.removeMargin.style.display === "block"){
+
+        inputs.topMargin.value = "0";
+        inputs.rightMargin.value = "0";
+        inputs.bottomMargin.value = "0";
+        inputs.leftMargin.value = "0";
+
+        const colorBoxes = wrapper.querySelectorAll(".color-box");
+        if(colorBoxes.length > 0){
+            colorBoxes.forEach(box => {
+                box.style.marginTop = "0px";
+                box.style.marginRight = "0px";
+                box.style.marginBottom = "0px";
+                box.style.marginLeft = "0px";
+
+                box.style.width = "100%";
+                box.style.height = "100%";
+            });
+        }
+
+        inputs.removeMargin.style.display = "none";
+        inputs.applyMargin.style.display = "block";
+    }
+   
+}
+
 function resetGrid(grid, inputs, state){
     inputs.row.value = inputs.col.value = "";
     grid.innerHTML = "";
@@ -282,6 +389,8 @@ function resetGrid(grid, inputs, state){
     
     inputs.inputBtns.style.display = "flex";
     inputs.colorBtns.style.display = "none";
+    inputs.reset.style.display = "none";
+    inputs.editingController.style.display = "none";
     toggleMark(inputs, false);
 
 }
@@ -299,7 +408,6 @@ function deleteGraph(wrapper, container){
     reOrderNumber(container);
 }
 
-
 function reOrderNumber(container){
     const wrappers = container.querySelectorAll(".graph-wrapper");
 
@@ -316,23 +424,24 @@ function reOrderNumber(container){
             header.textContent = `Graph ${newNumber}`;
             header.dataset.graphId = newId;
         }
+
     });
 }
 
 function toggleMark(inputs, marked){
     inputs.mark.style.display = marked ? "none" : "inline-block";
     inputs.clear.style.display = marked ? "inline-block" : "none";
-    inputs.y.disabled = inputs.x.disabled = inputs.color.disabled = marked;
+    inputs.y.disabled = inputs.x.disabled = marked;
+    inputs.editingBtn.disabled = false;
 }
 
 function init(){
 
     const addGraphBtn = document.getElementById("add-graph");
     const graphContainer =document.getElementById("graph-container");
-    // let graphCount = 0;
 
     addGraphBtn.addEventListener("click", () => {
-        // graphCount++;
+
         const existingGraphs = graphContainer.querySelectorAll(".graph-wrapper").length;
         const newGraphNumber = existingGraphs + 1;
 
